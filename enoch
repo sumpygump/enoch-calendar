@@ -1,0 +1,183 @@
+#!/usr/bin/env php
+<?php
+
+define('ENOCH_EPOCH_YEAR', -4004);
+$date = isset($argv[1]) ? $argv[1] : date('Y-m-d');
+
+$enoch = new EnochDate();
+$enoch_date = $enoch->getDate($date);
+//print $enoch_date->entry . "\n";
+printf("Enoch date for %s: %s %s\n", $date, $enoch_date->day_of_week, $enoch_date->enoch_date);
+
+class EnochDate
+{
+    public $db;
+    private $offset_file;
+
+    public function __construct()
+    {
+        $this->db = __DIR__ . "/enoch-all.txt";
+        $this->offset_file = __DIR__ . "/.enoch-all.offsets";
+        if (!file_exists($this->db)) {
+            printf("Database file not found. Please run `make` in directory %s to continue.\n", __DIR__);
+            exit(1);
+        }
+
+        $this->createOffsetCache();
+    }
+
+    private function createOffsetCache()
+    {
+        if (file_exists($this->offset_file)) {
+            return true;
+        }
+
+        // Generating this cache file is a beasterly slow process! :(
+
+        print("Creating cache file. This will take a while.\n");
+        $file = new SplFileObject($this->db);
+        $cache = fopen($this->offset_file, "a");
+        $buffer = [];
+
+        while (!$file->eof()) {
+            $entry = $file->current();
+            $obj = $this->getEnochDateObject($entry);
+
+            # Write the offset for the year
+            $key = $file->key();
+            $buffer[] = $obj->year . "\t" . $file->key();
+            if (count($buffer) >= 100) {
+                fwrite($cache, implode("\n", $buffer) . "\n");
+                $buffer = [];
+                $this->progress($key);
+            }
+
+            $ff = 364;
+            if ($obj->jubilee) {
+                $ff += 7;
+                if (strpos($obj->jubilee, "Double") !== false) {
+                    $ff += 7;
+                }
+            }
+
+            $file->seek($key + $ff);
+        }
+
+        # Write the leftover buffer
+        fwrite($cache, implode("\n", $buffer));
+        fclose($cache);
+        $file = null;
+    }
+
+    public function progress($completed)
+    {
+        $total = 2658958;
+        $percent = $completed / $total;
+
+        $width = 80;
+        $c_width = $width * $percent;
+        $r_width = $width - $c_width;
+
+        printf("\r%s%s (%s%%)", str_repeat("█", $c_width), str_repeat("░", $r_width), number_format($percent * 100));
+    }
+
+    public function getDate($date)
+    {
+        $ts = strtotime($date);
+        $year = date("Y", $ts);
+
+        if ($year < ENOCH_EPOCH_YEAR) {
+            print "Date too far in past, must be greater than -4004-03-31\n";
+            exit(1);
+        }
+
+        $enoch_date = $this->fetchEntry($date);
+        return $enoch_date;
+    }
+
+    public function fetchEntry($date)
+    {
+        $linenumber = $this->getLineNumber($date);
+
+        $file = new SplFileObject($this->db);
+        $found = false;
+        $target = strtotime($date);
+
+        $file->seek($linenumber);
+        while (!$found && !$file->eof()) {
+            $line = $file->current();
+            $obj = $this->getEnochDateObject($line);
+            if ($obj->ts == $target) {
+                $found = 1;
+                return $obj;
+            }
+            $file->next();
+        }
+
+        return false;
+    }
+
+    public function getLineNumber($date)
+    {
+        $ts = strtotime($date);
+        $year = date("Y", $ts);
+        //$ndate = date("Y-m-d", $ts);
+
+        $offset_file = new SplFileObject($this->offset_file);
+        if (!$offset_file->eof()) {
+            // We have to subtract a year, because the offsets are based on the
+            // enoch new year, which is in the spring, so the current year may
+            // be before that
+            $target = max($year + abs(ENOCH_EPOCH_YEAR) - 1, 0);
+            $offset_file->seek($target);
+            $line = $offset_file->current();
+        }
+
+        $p = explode("\t", $line);
+        return (int) trim($p[1]);
+    }
+
+    public function getEnochDateObject($line)
+    {
+        # Parse the line
+        $parts = explode("\t", $line);
+
+        $date_obj = new StdClass();
+        $date_obj->entry = trim($line);
+        $date_obj->jubilee = null;
+        $map = [
+            "jd", "total_day", "day_of_week", "gregorian_date",
+            "enoch_date", "great_year", "great_month", "great_day", "jubilee"
+        ];
+        foreach ($map as $index => $name) {
+            if (!isset($parts[$index])) {
+                continue;
+            }
+            $date_obj->{$name} = trim($parts[$index]);
+        }
+
+        $date_obj->year = substr($date_obj->gregorian_date, 2, 5);
+        $date_obj->ts = strtotime(substr($date_obj->gregorian_date, 2));
+
+        return $date_obj;
+    }
+}
+
+class MasterTimer
+{
+    public static $start;
+    public static $now;
+
+    public static function start()
+    {
+        self::$start = microtime(true);
+        self::$now = microtime(true);
+    }
+
+    public static function tick($label = 'TICK')
+    {
+        $now = microtime(true);
+        print_r(sprintf("%s %0.2f\n", $label, $now - self::$now));
+        self::$now = $now;
+    }
+}

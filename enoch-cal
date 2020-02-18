@@ -1,0 +1,233 @@
+#!/usr/bin/env php
+<?php
+
+// The original correct start is -4004-03-31
+// Uniform enoch calendar start is -4021-02-04 ?
+// Julian epoch is -4713-01-01
+
+$epoch = getenv('ENOCH_EPOCH', true) ? getenv('ENOCH_EPOCH') : "-4004-03-31";
+$day_cycles = getenv('ENOCH_DAYS', true) ? getenv('ENOCH_DAYS') : 2658958;
+
+$enoch = new EnochCalendarGenerator($epoch);
+$enoch->print_every_day = getenv('ENOCH_DAILY', true) ? (bool) getenv('ENOCH_DAILY') : false;
+$enoch->uniform_enoch_calendar = getenv('ENOCH_UNIFORM', true) ? (bool) getenv('ENOCH_UNIFORM') : false;
+$enoch->calculate($day_cycles);
+
+/**
+ * Enoch Calendar Generator
+ */
+class EnochCalendarGenerator
+{
+    const JUBILEE_MONTH_DAYS = 38;
+    const JUBILEE_DOUBLE_MONTH_DAYS = 45;
+
+    # To keep track of the current day to calculate on
+    public $cursor;
+
+    # Track total days processed
+    public $total_day = 1;
+
+    public $year = 1;
+    public $day = 1; // Day of month
+    public $month = 1;
+
+    public $great_day = 1; // One year
+    public $great_month = 1; // A great month is every 30 years
+    public $great_year = 1; // A great year is every 364 years
+
+    public $is_jubilee = false;
+
+    # Keep track of Saturday years
+    public $jubilee_count = 1;
+
+    # For jubilee years that have an extra two weeks instead of just one
+    public $extra_jubilee = false;
+
+    # Tracks the 31st day of each great month
+    public $seasonal_marker = false;
+
+    # Whether to use the straight 364 day years (no jubilees)
+    public $uniform_enoch_calendar = false;
+
+    # Whether to print every day or just new years days
+    public $print_every_day = false;
+
+    # Keep track of current day of week
+    public $weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    public $current_weekday = 0;
+
+    /**
+     * Constructor
+     *
+     * @param string $start_date Date to start the Enochian epoch
+     */
+    public function __construct($start_date = "0000-03-26")
+    {
+        // If this specific date is used it sets a few initial date params
+        // which map back to an original start date of -4004-03-31
+        if ($start_date == "0000-03-26") {
+            $this->total_day = 1462427;
+            $this->year = 4005;
+            $this->great_year = 12;
+            $this->jubilee_count = 573;
+        }
+
+        $this->cursor = new DateTime($start_date);
+    }
+
+    /**
+     * Calculate a listing of dates for a particular number of days
+     */
+    public function calculate($days = 5800)
+    {
+        for ($i = 0; $i < $days; $i++) {
+            if ($this->uniform_enoch_calendar == false) {
+                # Jubilee years
+                if ($this->year % 7 == 0) {
+                    $this->is_jubilee = true;
+                } else {
+                    $this->is_jubilee = false;
+                }
+
+                # Every fourth jubilee is a double jubilee
+                if ($this->jubilee_count % 4 == 0) {
+                    $this->extra_jubilee = true;
+                } else {
+                    $this->extra_jubilee = false;
+                }
+
+                # But make the first jubilee in a 3rd or 5th great year be a regular jubilee
+                if ($this->great_month == 1 && $this->great_day == 28
+                    && ($this->great_year % 3 == 0 || $this->great_year % 5 == 0)
+                ) {
+                    $this->extra_jubilee = false;
+                }
+            }
+
+            # Number of days in month goes 30 30 31
+            if ($this->month % 3 == 0) {
+                if ($this->month == 12 && $this->is_jubilee && $this->uniform_enoch_calendar == false) {
+                    if ($this->extra_jubilee) {
+                        # Extra two weeks for every fourth jubilee year
+                        $days_in_month = self::JUBILEE_DOUBLE_MONTH_DAYS;
+                    } else {
+                        # Extra week for jubilee years
+                        $days_in_month = self::JUBILEE_MONTH_DAYS;
+                    }
+                } else {
+                    $days_in_month = 31;
+                }
+            } else {
+                $days_in_month = 30;
+            }
+
+            if ($this->great_month % 3 == 0) {
+                $great_days_in_month = 31;
+            } else {
+                $great_days_in_month = 30;
+            }
+
+            # Print the day!
+            if ($this->print_every_day) {
+                $this->print_day();
+            } else {
+                if ($this->month == 1 && $this->day == 1) {
+                    $this->print_day();
+                }
+            }
+
+            $this->total_day++;
+            $this->day++;
+
+            $this->cursor->modify("+1 day");
+
+            if ($this->day == $days_in_month + 1) {
+                $this->month++;
+                $this->day = 1;
+            }
+
+            if ($this->month == 12 + 1) {
+                $this->year++;
+                $this->great_day++;
+                $this->month = 1;
+                $this->day = 1;
+
+                if ($this->is_jubilee) {
+                    $this->jubilee_count++;
+                }
+
+                if ($great_days_in_month == 30 && $this->great_day == 31) {
+                    $this->great_month++;
+                    $this->great_day = 1;
+                }
+
+                if ($great_days_in_month == 31 && $this->great_day == 31) {
+                    $this->seasonal_marker = true;
+                }
+
+                if ($great_days_in_month == 31 && $this->great_day == 32) {
+                    $this->seasonal_marker = false;
+                    $this->great_month++;
+                    $this->great_day = 1;
+                }
+
+                if ($this->great_month == 13) {
+                    $this->great_year++;
+                    $this->great_day = 1;
+                    $this->great_month = 1;
+                }
+            }
+        }
+    }
+
+    /**
+     * Print out the current day
+     */
+    public function print_day()
+    {
+        $jubilee = "";
+        if ($this->is_jubilee) {
+            $jubilee = "\tJubilee " . $this->jubilee_count;
+            if ($this->extra_jubilee) {
+                $jubilee .= " (Double week jubilee)";
+            }
+        }
+
+        $season_marker = "";
+        if ($this->seasonal_marker) {
+            $season_marker = " (Seasonal marker year)";
+        }
+
+        print gregoriantojd($this->cursor->format('m'), $this->cursor->format('d'), $this->cursor->format('Y'))
+            . "\t" . str_pad($this->total_day, 7, " ", STR_PAD_RIGHT)
+            . "\t" . $this->weekday_cycle()
+            . "\tg~" . str_pad($this->cursor->format('Y-m-d'), 11, " ", STR_PAD_LEFT)
+            . "\te~" . str_pad($this->year, 4, "0", STR_PAD_LEFT) . "-"
+            . str_pad($this->month, 2, "0", STR_PAD_LEFT) . "-"
+            . str_pad($this->day, 2, "0", STR_PAD_LEFT)
+            . "\tGY" . str_pad($this->great_year, 2, "0", STR_PAD_LEFT)
+            . "\tGM" . str_pad($this->great_month, 2, "0", STR_PAD_LEFT)
+            . "\tGD" . str_pad($this->great_day, 2, "0", STR_PAD_LEFT)
+            . $jubilee
+            . $season_marker
+            . "\n";
+    }
+
+    /**
+     * I had to keep track of my own week day cycle because date() was wrong
+     * for years BC
+     */
+    public function weekday_cycle()
+    {
+        if ($this->print_every_day) {
+            if ($this->current_weekday > 6) {
+                $this->current_weekday = 0;
+            }
+            return $this->weekdays[$this->current_weekday++];
+        }
+
+        # If it is not daily, figure it out from the cursor date - but it is
+        # usually off for dates before 0
+        return $this->cursor->format('D');
+    }
+}
