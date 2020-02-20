@@ -25,6 +25,54 @@ See [Mapping time](https://www.johnpratt.com/items/docs/mapping_time.html#6).
 See also:
 https://www.johnpratt.com/items/docs/lds/meridian/2001/enoch_cal.html
 
+## Requirements/installation
+
+This program requires php 7+
+
+After cloning this repository, run `make` to generate the days "databases."
+
+Then run `enoch` one time to generate the cache file to make lookups faster. It
+will take several minutes to create the cache file.
+
+## Usage
+
+Review the output files to find specific dates.
+
+Run `enoch` from command line to output the current date.
+
+## Database files
+
+The following files are generated as artifacts from the make file:
+
+ - `enoch-all.txt` - all the days from -4004 (B.C.) to 3276
+ - `enoch-ad.txt` - days from year zero 0000 to 3276
+ - `enoch-ny.txt` - just the enoch new years days
+ - `enoch-uniform.txt` - all the days for the uniform enoch calendar (no jubilees)
+
+Each generated line of the files looks like the following. Below is an example
+line with an explanation of what each column means.
+
+```
+2458899	2200181	Wed	g~ 2020-02-19	e~6024-11-30	GY17	GM07	GD18
+^       ^       ^   ^               ^               ^       ^       ^
+|       |       |   |               |               |       |       |
+|       |       |   |               |               |       |       +-- The great day number starting with "GD"
+|       |       |   |               |               |       |
+|       |       |   |               |               |       +-- The great month number starting with "GM"
+|       |       |   |               |               |
+|       |       |   |               |               +-- The great year number starting with "GY"
+|       |       |   |               |
+|       |       |   |               +-- The Enoch date in format "e~" then YYYY-MM-DD
+|       |       |   |
+|       |       |   +-- The Gregorian date in format "g~" then (-)YYYY-MM-DD
+|       |       |
+|       |       +-- The day of the week
+|       |
+|       +-- The number of days calculated from the beginning of the file
+|
++-- The julian date
+```
+
 ## Enoch's Ten Weeks of the earth
 
 According to the article [Enoch's Ten Week Prophecy](https://www.johnpratt.com/items/docs/2015/ten_week_prophecy.html) by
@@ -64,6 +112,7 @@ Day 2791902 Sun 3640-03-18 e7645-01-01 GY22 GM1 GD1
 
 Other key dates
 
+```
 Birth of Christ ~ Aligns with passover (15 Nisan)
 Day 1462437 Wed  0000-04-05 e4005-01-11 GY12 GM01 GD01
 
@@ -84,3 +133,4 @@ Day 1474537 Sun  0033-05-22 e4038-03-11 GY12 GM02 GD04
 
 Kirtland temple dedication
 Day 2133013 Sun  1836-03-27 e5841-01-08 GY17 GM01 GD17
+```
