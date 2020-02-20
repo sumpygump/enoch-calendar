@@ -1,8 +1,8 @@
-# Enoch Time
+# Enoch Calendar
 
 This project is an attempt to calculate a timeline and conversion between Gregorian dates and the Enoch Calendar.
 
-## Enoch calendar description
+## Description of the Enoch calendar
 
 The Enoch calendar divides the year into four seasons of exactly 13 weeks each.
 Each such season consisted of two 30-day months followed by one 31-day month,
@@ -87,7 +87,7 @@ According to these weeks, each "day" would be 104 days.
 Key dates in ten week prophecy
 
 ```
-Day 1       Sat -4004-03-31 e0001-01-01 GY1 GM1 GD1
+Day 1      Sat -4004-03-31 e0001-01-01 GY1 GM1 GD1
 Day 132952 Sun -3640-04-03 e0365-01-01 GY2 GM1 GD1
 Day 265903 Sun -3276-04-06 e0729-01-01 GY3 GM1 GD1
 Day 398847 Sun -2912-04-01 e1093-01-01 GY4 GM1 GD1
