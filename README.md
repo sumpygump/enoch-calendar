@@ -5,18 +5,18 @@ This project is an attempt to calculate a timeline and conversion between Gregor
 ## Description of the Enoch calendar
 
 The Enoch calendar divides the year into four seasons of exactly 13 weeks each.
-Each such season consisted of two 30-day months followed by one 31-day month,
-with the 31st day ending the season, so that Enoch's Year consisted of exactly
+Each such season consists of two 30-day months followed by one 31-day month,
+with the 31st day ending the season, so that Enoch's year consists of exactly
 364 days.
 
 The Enoch calendar has the following properties:
 
-1. Each year starts on a Sunday and the days of the week continue unbroken Sunday - Saturday.
-2. The year has exactly 364 days with 12 months of each 31 days, but four of them have 31 days, for a total of 91 days per quarter of year (season).
-3. Every seventh year, an extra week is added to the year (a "jubilee" week). This extra week is added at the end of the last month (month 12).
-4. Every fourth jubilee year has two extra weeks instead of one (a double jubilee).
-5. Every 364 years is called a "great year" (GY) consisting of 12 "great months" (GM) each with 30 years. There is an extra "31st great day" on four of the great months (GM3, GM6, GM9, GM12). This pattern is symmetrical with the days of the year.
-6. Every third great year and every fifth great year takes away one week from the double jubilee, so the double jubilee for that year becomes a regular jubilee. Alter the first double jubilee of each of the mentioned great years, so the 28th year.
+1. Each year starts on a Sunday and the days of the week continue unbroken (Sunday - Saturday).
+2. The year has exactly 364 days with 12 months of each 30 days, but four of them have 31 days (months 3, 6, 9 and 12), for a total of 91 days per quarter-of-year (season).
+3. Every seventh year an extra week is added to the year (called a saturday year with a "jubilee" week). This extra week is added at the end of the last month (month 12).
+4. Every fourth saturday year has two extra weeks instead of one (a double jubilee).
+5. Every 364 years is called a "Great Year" (GY) consisting of 12 "Great Months" (GM) each with 30 years. There is an extra "31st Great Day" on four of the great months (GM3, GM6, GM9, GM12). This pattern is symmetrical with the 364-day year.
+6. Every third Great Year and every fifth Great Year one week is removed from one double jubilee saturday year, so the double jubilee for that year becomes a regular jubilee. Alter the first double jubilee of each of the fore-mentioned Great Years, so the 28th year.
 
 Rules 3-6 are suggested by John Pratt to ensure long-term accuracy since
 only 364 days in the year the calendar would get out of sync with the seasons.
@@ -56,11 +56,19 @@ Creating cache file. This will take a while.
 
 Review the output files to find specific dates.
 
-Run `enoch` from command line to output the current date.
+Run `enoch` from command line with no arguments to output the current date.
 
 ```
 $ enoch
 Enoch date for 2020-02-19: Wed e~2064-11-30
+```
+
+Run `enoch <date>` with format YYYY-MM-DD of a Gregorian date to output the corresponding
+Enoch calendar date for that date.
+
+```
+$ enoch 1976-07-04
+Enoch date for 1976-07-04: Sun e~5981-04-15
 ```
 
 ## Database files
