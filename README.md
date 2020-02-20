@@ -50,10 +50,11 @@ The following files are generated as artifacts from the make file:
  - `enoch-uniform.txt` - all the days for the uniform enoch calendar (no jubilees)
 
 Each generated line of the files looks like the following. Below is an example
-line with an explanation of what each column means.
+line with an explanation of what each column means. Note: each value is delimited
+by a tab character `\t`.
 
 ```
-2458899	2200181	Wed	g~ 2020-02-19	e~6024-11-30	GY17	GM07	GD18
+2458899 2200181 Wed g~ 2020-02-19   e~6024-11-30    GY17    GM07    GD18
 ^       ^       ^   ^               ^               ^       ^       ^
 |       |       |   |               |               |       |       |
 |       |       |   |               |               |       |       +-- The great day number starting with "GD"
