@@ -31,14 +31,37 @@ This program requires php 7+
 
 After cloning this repository, run `make` to generate the days "databases."
 
+```
+$ make
+Generating dates for all days from -4004 to 3276
+ENOCH_DAILY=1 php enoch-cal > enoch-all.txt
+Generating dates for anno domini from 0000 to 3276
+ENOCH_DAILY=1 ENOCH_DAYS=1196531 ENOCH_EPOCH=0000-03-26 php enoch-cal > enoch-ad.txt
+Generating dates for uniform enoch calendar (no jubilees) for all days
+ENOCH_DAILY=1 ENOCH_UNIFORM=1 ENOCH_EPOCH=-4021-02-04 php enoch-cal > enoch-uniform.txt
+Generating dates for new years only
+ENOCH_DAILY=0 php enoch-cal > enoch-ny.txt
+```
+
 Then run `enoch` one time to generate the cache file to make lookups faster. It
 will take several minutes to create the cache file.
+
+```
+$ enoch
+Creating cache file. This will take a while.
+█████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ (12%)
+```
 
 ## Usage
 
 Review the output files to find specific dates.
 
 Run `enoch` from command line to output the current date.
+
+```
+$ enoch
+Enoch date for 2020-02-19: Wed e~2064-11-30
+```
 
 ## Database files
 
