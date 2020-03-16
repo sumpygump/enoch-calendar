@@ -113,7 +113,7 @@ of the earth being divided into ten "weeks" where each week is a period of 728
 years (or two Great Years). In this article is given a start date of the Enoch
 calendar: the spring of year -4004 (4005 BC).
 
-According to these weeks, each "day" would be 104 days.
+According to these weeks, each "day" is 104 years.
 
 Key dates in ten week prophecy
 
