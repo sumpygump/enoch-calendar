@@ -1,13 +1,29 @@
 #!/usr/bin/env php
 <?php
 
+define('VERSION', '1.1');
 define('ENOCH_EPOCH_YEAR', -4004);
 $date = isset($argv[1]) ? $argv[1] : date('Y-m-d');
 
+if ($date == '--version' || $date == '-v') {
+    printf("enoch-calendar %s\n", VERSION);
+    exit(0);
+}
+
+if ($date == '--help' || $date == '-h') {
+    printf("enoch-calendar %s\n", VERSION);
+    print "Display the enoch calendar date for a given date.\n";
+    print "\n";
+    print "Usage: enoch [date]\n";
+    printf("  date should be in format Y-m-d, e.g. %s\n", date('Y-m-d'));
+    print "  if no date supplied it will use the current date.\n";
+    exit(0);
+}
+
 $enoch = new EnochDate();
 $enoch_date = $enoch->getDate($date);
-//print $enoch_date->entry . "\n";
-printf("Enoch date for %s: %s %s\n", $date, $enoch_date->day_of_week, $enoch_date->enoch_date);
+// print $enoch_date->entry . "\n";
+printf("Enoch date for %s: %s %s\n", $enoch_date->gregorian_date, $enoch_date->day_of_week, $enoch_date->enoch_date);
 
 class EnochDate
 {
@@ -84,12 +100,21 @@ class EnochDate
     public function getDate($date)
     {
         $ts = strtotime($date);
-        $year = date("Y", $ts);
 
+        if (false === $ts) {
+            print "Invalid date provided: $date\n";
+            exit(1);
+        }
+        
+        // Grab the year to confirm not too far
+        $year = date("Y", $ts);
         if ($year < ENOCH_EPOCH_YEAR) {
             print "Date too far in past, must be greater than -4004-03-31\n";
             exit(1);
         }
+
+        // Now force the date input to be in this format
+        $date = date("Y-m-d", $ts);
 
         $enoch_date = $this->fetchEntry($date);
         return $enoch_date;
